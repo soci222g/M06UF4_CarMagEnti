@@ -19,7 +19,7 @@ http_server.listen(8080);
 
 let p1_conn;
 let p2_conn;
-
+let view_conn = [];
 
 ws_server.on('connection', function (conn){
    
@@ -41,6 +41,7 @@ ws_server.on('connection', function (conn){
   else if(p2_conn == undefined){
       p2_conn = conn;
 
+
       p2_conn.send('{"player_num":2}');
 
       p2_conn.on('message', function(data){
@@ -50,6 +51,23 @@ ws_server.on('connection', function (conn){
           p1_conn.send(data.toString());
       });
 
+  }
+
+  else if (p2_conn& p1_conn){
+    view_conn.push(conn);
+
+    console.log("viewer entra")
+
+      for(let i = 0; i < view_conn.length; i++){
+          view_conn[i].on('message', function(data){
+          if(p1_conn == undefined || p2_conn == undefined){
+            return;
+          }
+        p1_conn.send(data.toString());
+        p2_conn.send(data.toString());
+        });
+      }
+    
   }
   /*  
     conn.on('message', function(data){

@@ -11,7 +11,7 @@ socket.addEventListener("open", function(event){
 });
 
 socket.addEventListener("message",function(event){
-    console.log("Server: ", event.data);
+   // console.log("Server: ", event.data);
 
     let data = JSON.parse(event.data);
 
@@ -25,6 +25,8 @@ socket.addEventListener("message",function(event){
             player2.y = data.y;
             player2.rotation = data.r;
             
+            GameOver_player2 = data.c;
+
             bullet2.x = data.bx;
             bullet2.y = data.by;
             bullet2.rotation = data.br;
@@ -34,10 +36,16 @@ socket.addEventListener("message",function(event){
             player1.y = data.y;
             player1.rotation = data.r;
 
+            GameOver_player1 = data.c;
+
             bullet1.x = data.bx;
             bullet1.y = data.by;
             bullet1.rotation = data.br;
         }
+        if(player_num == "view"){
+            
+        }
+
         
     }
 });
@@ -45,17 +53,26 @@ socket.addEventListener("message",function(event){
 
 
 
-  const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    scene:{
-        preload: preload,
-        create: create,
-        update: update
-    }
-    
-}
+    const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+
+        physics: {
+            default: 'arcade',
+            arcade: {
+                debug: true
+            }
+        },
+        scene:{
+            preload: preload,
+            create: create,
+            update: update
+        }
+
+
+        
+    };
 
 const game = new Phaser.Game(config);
 
@@ -85,8 +102,8 @@ let player_rotation_speed = 2;
 let bg;
 
 
-let player1_collided;
-let player2_collided;
+let GameOver_player1 = false;
+let GameOver_player2 = false;
 
 
 function preload(){
@@ -101,20 +118,30 @@ function create(){
 
    
     player1 = this.add.image(config.width/3, config.height/2,"Player1-img");
+
+    this.physics.add.existing(player1, false);
+    player1.body.setCollideWorldBounds(true);
+
     player2 = this.add.image((config.width/3) * 2,config.height/2,"Player2-img");
-    console.log("genera Ballas");
 
-    bullet1 = this.add.image(config.width/2, config.height/2,"bullet-img");
-    bullet2 = this.add.image(config.width/2, config.height/2,"bullet-img");
+    this.physics.add.existing(player2, false);
+    player2.body.setCollideWorldBounds(true);
 
+    
+    //bullet
+    bullet1 = this.add.image(1000,1000,"bullet-img");
+    this.physics.add.existing(bullet1, false);
+
+    bullet2 = this.add.image(1000,1000,"bullet-img");
+    this.physics.add.existing(bullet2, false);
+
+
+
+    
     //KEYS
     cursors = this.input.keyboard.createCursorKeys();
 }
-
 function update(){
-
-
-
 
 
 
@@ -150,17 +177,17 @@ function update(){
             bullet1_angle = player1_angle;
             bullet1_Spawned = true;
         }
-/*
-        if(bullet2.x == player1.x && bullet2.y == player1.y){
-            player1_collided = true;
-        }
-    */
+
+            if(this.physics.collide(bullet2, player1)){
+                GameOver_player1 = true;
+            }
    
          var player_data = {
             x: player1.x,
             y: player1.y,
             r: player1.rotation,
 
+            c: GameOver_player1,
 
             bx: bullet1.x,
             by: bullet1.y,
@@ -196,17 +223,27 @@ function update(){
             bullet2_angle = player2_angle;
             bullet2_spawned = true;
         }
-/*
-        if(bullet1.x == player2.x && bullet1.y == player2.y){
-            player2_collided = true;
+
+        if(GameOver_player1){
+            console.log("pierde player1")
         }
-  */  
+
+        if(GameOver_player2){
+            console.log("pierde player2")
+        }
+
+
+
+        if(this.physics.collide(bullet1, player2)){
+            GameOver_player2 = true;
+        }
    
         var player_data = {
             x: player2.x,
             y: player2.y,
             r: player2.rotation,
 
+            c: GameOver_player2,
 
             bx: bullet2.x,
             by: bullet2.y,
